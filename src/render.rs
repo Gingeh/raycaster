@@ -1,4 +1,4 @@
-use std::cmp;
+use std::{cmp, ops::Add};
 
 use crate::{
     ppm::{Colour, Image},
@@ -71,7 +71,7 @@ impl Scene {
             let intersection = ray * dist + self.camera.pos;
             let normal = target.normal(intersection);
 
-            let intensity: f64 = self
+            let light: Colour = self
                 .lights
                 .iter()
                 .filter(|light| {
@@ -83,14 +83,15 @@ impl Scene {
                         .all(|dist| dist + SHADOW_BIAS >= (intersection - light.pos).length())
                 })
                 .map(|light| {
-                    (light.pos - intersection)
-                        .normalized()
-                        .dot(normal)
-                        .clamp(0.0, f64::INFINITY)
+                    light.colour
+                        * (light.pos - intersection)
+                            .normalized()
+                            .dot(normal)
+                            .clamp(0.0, f64::INFINITY)
                 })
-                .sum();
+                .fold(Colour { r: 0, g: 0, b: 0 }, Add::add);
 
-            *colour = new_colour * intensity;
+            *colour = new_colour * light;
         }
     }
 }

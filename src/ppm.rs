@@ -1,10 +1,38 @@
-use std::{io::Write, iter, ops::Mul};
+use std::{
+    io::Write,
+    iter,
+    ops::{Add, Mul},
+};
 
 #[derive(Clone, Copy)]
 pub struct Colour {
     pub r: u8,
     pub g: u8,
     pub b: u8,
+}
+
+impl Add<Colour> for Colour {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            r: self.r.saturating_add(rhs.r),
+            g: self.g.saturating_add(rhs.g),
+            b: self.b.saturating_add(rhs.b),
+        }
+    }
+}
+
+impl Mul<Colour> for Colour {
+    type Output = Self;
+
+    fn mul(self, rhs: Self) -> Self::Output {
+        Self {
+            r: (self.r as f64 * rhs.r as f64 / 255.0) as u8,
+            g: (self.g as f64 * rhs.g as f64 / 255.0) as u8,
+            b: (self.b as f64 * rhs.b as f64 / 255.0) as u8,
+        }
+    }
 }
 
 impl Mul<f64> for Colour {
