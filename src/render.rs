@@ -5,6 +5,8 @@ use crate::{
     raycast::{RayTarget, Vec3},
 };
 
+const SHADOW_BIAS: f64 = 0.000_000_000_001;
+
 // yucky
 pub struct Camera {
     pos: Vec3,
@@ -72,6 +74,14 @@ impl Scene {
             let intensity: f64 = self
                 .lights
                 .iter()
+                .filter(|light| {
+                    self.objects
+                        .iter()
+                        .filter_map(|(target, _)| {
+                            target.intersect(light.pos, (intersection - light.pos).normalized())
+                        })
+                        .all(|dist| dist + SHADOW_BIAS >= (intersection - light.pos).length())
+                })
                 .map(|light| {
                     (light.pos - intersection)
                         .normalized()

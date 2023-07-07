@@ -92,8 +92,8 @@ fn main() -> color_eyre::Result<()> {
         ),
         lights: vec![PointLight {
             pos: Vec3 {
-                x: 0.0,
-                y: 10.0,
+                x: -2.0,
+                y: 8.0,
                 z: 6.0,
             },
             colour: Colour {
@@ -105,5 +105,6 @@ fn main() -> color_eyre::Result<()> {
     };
     scene.render(&mut image);
     image.write_ppm(&mut io::stdout())?;
+
     Ok(())
 }
