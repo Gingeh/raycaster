@@ -40,9 +40,17 @@ impl Image {
         self.buffer.iter_mut().enumerate().map(|(idx, colour)| {
             (
                 idx.rem_euclid(self.width as usize) as u16,
-                idx.div_floor(self.width as usize) as u16,
+                self.height - idx.div_floor(self.width as usize) as u16,
                 colour,
             )
         })
+    }
+
+    pub const fn width(&self) -> u16 {
+        self.width
+    }
+
+    pub const fn height(&self) -> u16 {
+        self.height
     }
 }
