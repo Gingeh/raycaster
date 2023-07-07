@@ -7,7 +7,7 @@ mod raycast;
 mod render;
 use ppm::{Colour, Image};
 use raycast::{Plane, Sphere, Vec3};
-use render::{Camera, Scene};
+use render::{Camera, PointLight, Scene};
 
 const WIDTH: u16 = 400;
 const HEIGHT: u16 = 300;
@@ -75,7 +75,7 @@ fn main() -> color_eyre::Result<()> {
         camera: Camera::new(
             Vec3 {
                 x: 0.0,
-                y: 1.0,
+                y: 2.0,
                 z: 0.0,
             },
             Vec3 {
@@ -90,6 +90,18 @@ fn main() -> color_eyre::Result<()> {
             },
             1.0,
         ),
+        lights: vec![PointLight {
+            pos: Vec3 {
+                x: 0.0,
+                y: 10.0,
+                z: 6.0,
+            },
+            colour: Colour {
+                r: 255,
+                g: 255,
+                b: 255,
+            },
+        }],
     };
     scene.render(&mut image);
     image.write_ppm(&mut io::stdout())?;

@@ -81,6 +81,7 @@ impl Div<f64> for Vec3 {
 
 pub trait RayTarget {
     fn intersect(&self, origin: Vec3, direction: Vec3) -> Option<f64>;
+    fn normal(&self, pos: Vec3) -> Vec3;
 }
 
 pub struct Sphere {
@@ -101,6 +102,10 @@ impl RayTarget for Sphere {
 
         Some(-direction.dot(origin - self.center) - nabla.sqrt())
     }
+
+    fn normal(&self, pos: Vec3) -> Vec3 {
+        (pos - self.center).normalized()
+    }
 }
 
 pub struct Plane {
@@ -114,5 +119,9 @@ impl RayTarget for Plane {
             (self.pos.dot(self.normal) - origin.dot(self.normal)) / direction.dot(self.normal);
 
         Some(dist)
+    }
+
+    fn normal(&self, _: Vec3) -> Vec3 {
+        self.normal.normalized()
     }
 }

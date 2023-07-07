@@ -28,9 +28,15 @@ impl Camera {
     }
 }
 
+pub struct PointLight {
+    pub pos: Vec3,
+    pub colour: Colour,
+}
+
 pub struct Scene {
     pub objects: Vec<(Box<dyn RayTarget>, Colour)>,
     pub camera: Camera,
+    pub lights: Vec<PointLight>,
 }
 
 impl Scene {
@@ -46,19 +52,35 @@ impl Scene {
 
             let ray = (right + up + forward).normalized();
 
-            if let Some((_, &new_colour)) = self
+            let Some((target, dist, &new_colour)) = self
                 .objects
                 .iter()
                 .filter_map(|(target, colour)| {
                     target
                         .intersect(self.camera.pos, ray)
-                        .map(|dist| (dist, colour))
+                        .map(|dist| (target, dist, colour))
                 })
-                .filter(|&(dist, _)| dist >= 0.0)
-                .min_by(|(a, _), (b, _)| a.partial_cmp(b).expect("No NaNs please"))
-            {
-                *colour = new_colour;
-            }
+                .filter(|&(_, dist, _)| dist >= 0.0)
+                .min_by(|(_, a, _), (_, b, _)| a.partial_cmp(b).expect("No NaNs please"))
+            else {
+                continue;
+            };
+
+            let intersection = ray * dist + self.camera.pos;
+            let normal = target.normal(intersection);
+
+            let intensity: f64 = self
+                .lights
+                .iter()
+                .map(|light| {
+                    (light.pos - intersection)
+                        .normalized()
+                        .dot(normal)
+                        .clamp(0.0, f64::INFINITY)
+                })
+                .sum();
+
+            *colour = new_colour * intensity;
         }
     }
 }

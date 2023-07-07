@@ -1,10 +1,22 @@
-use std::{io::Write, iter};
+use std::{io::Write, iter, ops::Mul};
 
 #[derive(Clone, Copy)]
 pub struct Colour {
     pub r: u8,
     pub g: u8,
     pub b: u8,
+}
+
+impl Mul<f64> for Colour {
+    type Output = Self;
+
+    fn mul(self, rhs: f64) -> Self::Output {
+        Self {
+            r: (self.r as f64 * rhs).clamp(0.0, 256.0 - f64::EPSILON) as u8,
+            g: (self.g as f64 * rhs).clamp(0.0, 256.0 - f64::EPSILON) as u8,
+            b: (self.b as f64 * rhs).clamp(0.0, 256.0 - f64::EPSILON) as u8,
+        }
+    }
 }
 
 pub struct Image {
@@ -29,7 +41,7 @@ impl Image {
         writeln!(file, "{} {}", self.width, self.height)?;
         writeln!(file, "255")?;
 
-        for colour in self.buffer.iter() {
+        for colour in &*self.buffer {
             writeln!(file, "{} {} {}", colour.r, colour.g, colour.b)?;
         }
 
