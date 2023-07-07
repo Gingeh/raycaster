@@ -50,9 +50,9 @@ fn main() -> color_eyre::Result<()> {
             (
                 Box::new(sphere1),
                 Colour {
-                    r: 255,
-                    g: 255,
-                    b: 255,
+                    r: 85,
+                    g: 205,
+                    b: 252,
                 },
             ),
             (
@@ -66,9 +66,9 @@ fn main() -> color_eyre::Result<()> {
             (
                 Box::new(plane),
                 Colour {
-                    r: 255,
-                    g: 255,
-                    b: 255,
+                    r: 247,
+                    g: 168,
+                    b: 184,
                 },
             ),
         ],
@@ -90,32 +90,18 @@ fn main() -> color_eyre::Result<()> {
             },
             1.0,
         ),
-        lights: vec![
-            PointLight {
-                pos: Vec3 {
-                    x: -2.0,
-                    y: 8.0,
-                    z: 6.0,
-                },
-                colour: Colour {
-                    r: 214,
-                    g: 48,
-                    b: 112,
-                },
+        lights: vec![PointLight {
+            pos: Vec3 {
+                x: -2.0,
+                y: 8.0,
+                z: 6.0,
             },
-            PointLight {
-                pos: Vec3 {
-                    x: 3.0,
-                    y: 6.0,
-                    z: 4.0,
-                },
-                colour: Colour {
-                    r: 7,
-                    g: 56,
-                    b: 167,
-                },
+            colour: Colour {
+                r: 255,
+                g: 255,
+                b: 255,
             },
-        ],
+        }],
     };
     scene.render(&mut image);
     image.write_ppm(&mut io::stdout())?;

@@ -6,6 +6,7 @@ use crate::{
 };
 
 const SHADOW_BIAS: f64 = 0.000_000_000_001;
+const AMBIENT_COEF: f64 = 0.1;
 
 // yucky
 pub struct Camera {
@@ -71,7 +72,7 @@ impl Scene {
             let intersection = ray * dist + self.camera.pos;
             let normal = target.normal(intersection);
 
-            let light: Colour = self
+            let diffuse_light: Colour = self
                 .lights
                 .iter()
                 .filter(|light| {
@@ -91,7 +92,14 @@ impl Scene {
                 })
                 .fold(Colour { r: 0, g: 0, b: 0 }, Add::add);
 
-            *colour = new_colour * light;
+            let ambient_light = self
+                .lights
+                .iter()
+                .map(|light| light.colour)
+                .fold(Colour { r: 0, g: 0, b: 0 }, Add::add)
+                / self.lights.len() as f64 * AMBIENT_COEF;
+
+            *colour = new_colour * (diffuse_light + ambient_light);
         }
     }
 }

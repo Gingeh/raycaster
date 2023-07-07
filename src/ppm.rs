@@ -1,7 +1,7 @@
 use std::{
     io::Write,
     iter,
-    ops::{Add, Mul},
+    ops::{Add, Mul, Div},
 };
 
 #[derive(Clone, Copy)]
@@ -40,9 +40,21 @@ impl Mul<f64> for Colour {
 
     fn mul(self, rhs: f64) -> Self::Output {
         Self {
-            r: (self.r as f64 * rhs).clamp(0.0, 256.0 - f64::EPSILON) as u8,
-            g: (self.g as f64 * rhs).clamp(0.0, 256.0 - f64::EPSILON) as u8,
-            b: (self.b as f64 * rhs).clamp(0.0, 256.0 - f64::EPSILON) as u8,
+            r: (self.r as f64 * rhs) as u8,
+            g: (self.g as f64 * rhs) as u8,
+            b: (self.b as f64 * rhs) as u8,
+        }
+    }
+}
+
+impl Div<f64> for Colour {
+    type Output = Self;
+
+    fn div(self, rhs: f64) -> Self::Output {
+        Self {
+            r: (self.r as f64 / rhs) as u8,
+            g: (self.g as f64 / rhs) as u8,
+            b: (self.b as f64 / rhs) as u8,
         }
     }
 }
