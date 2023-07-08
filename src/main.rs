@@ -2,15 +2,17 @@
 
 use std::{fs::OpenOptions, io::BufWriter};
 
+mod obj;
 mod ppm;
 mod raycast;
 mod render;
+use obj::load_obj;
 use ppm::{Colour, Image};
-use raycast::{Plane, Sphere, Triangle, Vec3};
+use raycast::{Plane, Sphere, Vec3};
 use render::{Camera, PointLight, Scene};
 
-const WIDTH: u16 = 400;
-const HEIGHT: u16 = 300;
+const WIDTH: u16 = 800;
+const HEIGHT: u16 = 450;
 
 fn main() -> color_eyre::Result<()> {
     let mut image = Image::new(WIDTH, HEIGHT, Colour { r: 0, g: 0, b: 0 });
@@ -45,14 +47,16 @@ fn main() -> color_eyre::Result<()> {
         },
     };
 
-    let cube = make_cube(
-        Vec3 {
-            x: 1.0,
-            y: 0.75,
-            z: 7.5,
-        },
-        0.75,
-    );
+    let mut bnuuy = load_obj(include_str!("../bnuuy.obj"));
+    for triangle in bnuuy.iter_mut() {
+        triangle.vertices = triangle.vertices.map(|pos| {
+            pos + Vec3 {
+                x: 1.0,
+                y: 0.0,
+                z: 6.0,
+            }
+        })
+    }
 
     let scene = Scene {
         objects: vec![
@@ -81,7 +85,7 @@ fn main() -> color_eyre::Result<()> {
                 },
             ),
             (
-                Box::new(cube),
+                Box::new(bnuuy),
                 Colour {
                     r: 255,
                     g: 0,
@@ -132,71 +136,4 @@ fn main() -> color_eyre::Result<()> {
     image.write_ppm(&mut writer)?;
 
     Ok(())
-}
-
-fn make_cube(center: Vec3, radius: f64) -> Vec<Triangle> {
-    let vertices = [
-        Vec3 {
-            x: -1.0,
-            y: -1.0,
-            z: -1.0,
-        },
-        Vec3 {
-            x: 1.0,
-            y: -1.0,
-            z: -1.0,
-        },
-        Vec3 {
-            x: 1.0,
-            y: 1.0,
-            z: -1.0,
-        },
-        Vec3 {
-            x: -1.0,
-            y: 1.0,
-            z: -1.0,
-        },
-        Vec3 {
-            x: 1.0,
-            y: -1.0,
-            z: 1.0,
-        },
-        Vec3 {
-            x: -1.0,
-            y: -1.0,
-            z: 1.0,
-        },
-        Vec3 {
-            x: -1.0,
-            y: 1.0,
-            z: 1.0,
-        },
-        Vec3 {
-            x: 1.0,
-            y: 1.0,
-            z: 1.0,
-        },
-    ]
-    .map(|pos| pos * radius + center);
-
-    let make_tri = |a: usize, b: usize, c: usize| -> Triangle {
-        Triangle {
-            vertices: [vertices[a], vertices[b], vertices[c]],
-        }
-    };
-
-    vec![
-        make_tri(0, 1, 5),
-        make_tri(5, 1, 4),
-        make_tri(1, 2, 4),
-        make_tri(4, 2, 7),
-        make_tri(2, 3, 7),
-        make_tri(7, 3, 6),
-        make_tri(3, 0, 6),
-        make_tri(6, 0, 5),
-        make_tri(6, 5, 7),
-        make_tri(7, 5, 4),
-        make_tri(2, 1, 3),
-        make_tri(3, 1, 0),
-    ]
 }
