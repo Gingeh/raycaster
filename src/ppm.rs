@@ -11,7 +11,7 @@ pub struct Colour {
     pub b: u8,
 }
 
-impl Add<Colour> for Colour {
+impl Add<Self> for Colour {
     type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
@@ -23,7 +23,7 @@ impl Add<Colour> for Colour {
     }
 }
 
-impl Mul<Colour> for Colour {
+impl Mul<Self> for Colour {
     type Output = Self;
 
     fn mul(self, rhs: Self) -> Self::Output {

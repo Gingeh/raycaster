@@ -1,6 +1,6 @@
 #![feature(int_roundings)]
 
-use std::io;
+use std::{io::{BufWriter}, fs::OpenOptions};
 
 mod ppm;
 mod raycast;
@@ -104,7 +104,15 @@ fn main() -> color_eyre::Result<()> {
         }],
     };
     scene.render(&mut image);
-    image.write_ppm(&mut io::stdout())?;
+
+    let mut writer = BufWriter::with_capacity(
+        19 + 12 * WIDTH as usize * HEIGHT as usize,
+        OpenOptions::new()
+            .create(true)
+            .write(true)
+            .open("out.ppm")?,
+    );
+    image.write_ppm(&mut writer)?;
 
     Ok(())
 }
