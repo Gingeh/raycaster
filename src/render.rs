@@ -19,7 +19,7 @@ pub struct Camera {
 
 impl Camera {
     pub fn new(pos: Vec3, forward: Vec3, up: Vec3, focal_dist: f64) -> Self {
-        let right = forward.cross(up).normalized();
+        let right = up.cross(forward).normalized();
 
         Self {
             pos,
@@ -69,8 +69,8 @@ impl Scene {
                 continue;
             };
 
+            let normal = target.normal(self.camera.pos, ray);
             let intersection = ray * dist + self.camera.pos;
-            let normal = target.normal(intersection);
 
             let diffuse_light: Colour = self
                 .lights
@@ -97,7 +97,8 @@ impl Scene {
                 .iter()
                 .map(|light| light.colour)
                 .fold(Colour { r: 0, g: 0, b: 0 }, Add::add)
-                / self.lights.len() as f64 * AMBIENT_COEF;
+                / self.lights.len() as f64
+                * AMBIENT_COEF;
 
             *colour = new_colour * (diffuse_light + ambient_light);
         }

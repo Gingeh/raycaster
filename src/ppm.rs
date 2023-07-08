@@ -1,7 +1,7 @@
 use std::{
     io::Write,
     iter,
-    ops::{Add, Mul, Div},
+    ops::{Add, Div, Mul},
 };
 
 #[derive(Clone, Copy)]
