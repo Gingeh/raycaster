@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Index, Mul, Sub};
 
 #[derive(Clone, Copy, Debug)]
 pub struct Vec3 {
@@ -74,6 +74,19 @@ impl Div<f64> for Vec3 {
             x: self.x / rhs,
             y: self.y / rhs,
             z: self.z / rhs,
+        }
+    }
+}
+
+impl Index<usize> for Vec3 {
+    type Output = f64;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        match index {
+            0 => &self.x,
+            1 => &self.y,
+            2 => &self.z,
+            _ => panic!("it's a 3d vector, dumbass"),
         }
     }
 }
@@ -167,16 +180,76 @@ impl RayTarget for Triangle {
     }
 }
 
-impl RayTarget for Vec<Triangle> {
+pub struct Mesh {
+    tris: Vec<Triangle>,
+    high_corner: Vec3,
+    low_corner: Vec3,
+}
+
+impl Mesh {
+    pub fn new(tris: Vec<Triangle>) -> Self {
+        let high_corner = tris
+            .iter()
+            .flat_map(|tri| tri.vertices)
+            .reduce(|a, b| Vec3 {
+                x: a.x.max(b.x),
+                y: a.y.max(b.y),
+                z: a.z.max(b.z),
+            })
+            .unwrap();
+
+        let low_corner = tris
+            .iter()
+            .flat_map(|tri| tri.vertices)
+            .reduce(|a, b| Vec3 {
+                x: a.x.min(b.x),
+                y: a.y.min(b.y),
+                z: a.z.min(b.z),
+            })
+            .unwrap();
+
+        Self {
+            tris,
+            high_corner,
+            low_corner,
+        }
+    }
+
+    // taken from https://tavianator.com/2022/ray_box_boundary.html
+    fn aabb_check(&self, origin: Vec3, direction: Vec3) -> bool {
+        let mut tmin = 0.0_f64;
+        let mut tmax = f64::INFINITY;
+
+        for d in 0..3 {
+            let t1 = (self.low_corner[d] - origin[d]) / direction[d];
+            let t2 = (self.high_corner[d] - origin[d]) / direction[d];
+
+            tmin = tmin.max(t1.min(t2));
+            tmax = tmax.min(t1.max(t2));
+        }
+
+        tmin < tmax
+    }
+}
+
+impl RayTarget for Mesh {
     fn intersect(&self, origin: Vec3, direction: Vec3) -> Option<f64> {
-        self.iter()
+        if !self.aabb_check(origin, direction) {
+            return None;
+        }
+
+        self.tris
+            .iter()
             .filter_map(|tri| tri.intersect(origin, direction))
             .filter(|&dist| dist >= 0.0)
             .min_by(|a, b| a.partial_cmp(b).expect("No NaNs please"))
     }
 
     fn normal(&self, origin: Vec3, direction: Vec3) -> Vec3 {
-        self.iter()
+        assert!(self.aabb_check(origin, direction));
+
+        self.tris
+            .iter()
             .filter_map(|tri| tri.intersect(origin, direction).map(|dist| (tri, dist)))
             .filter(|&(_, dist)| dist >= 0.0)
             .min_by(|(_, a), (_, b)| a.partial_cmp(b).expect("No NaNs please"))

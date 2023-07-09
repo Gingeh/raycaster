@@ -12,7 +12,7 @@ pub fn load_obj(data: &str) -> Vec<Triangle> {
                     x: coords.next().unwrap().parse().unwrap(),
                     y: coords.next().unwrap().parse().unwrap(),
                     z: coords.next().unwrap().parse().unwrap(),
-                })
+                });
             }
             "f " => {
                 let mut indices = line.split_ascii_whitespace().skip(1);
@@ -20,7 +20,7 @@ pub fn load_obj(data: &str) -> Vec<Triangle> {
                     indices.next().unwrap().parse().unwrap(),
                     indices.next().unwrap().parse().unwrap(),
                     indices.next().unwrap().parse().unwrap(),
-                ))
+                ));
             }
             _ => {}
         }
@@ -29,12 +29,8 @@ pub fn load_obj(data: &str) -> Vec<Triangle> {
     let mut faces = Vec::new();
     for (a, b, c) in face_indices {
         faces.push(Triangle {
-            vertices: [
-                vertices[a - 1],
-                vertices[b - 1],
-                vertices[c - 1],
-            ]
-        })
+            vertices: [vertices[a - 1], vertices[b - 1], vertices[c - 1]],
+        });
     }
 
     faces

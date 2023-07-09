@@ -8,11 +8,11 @@ mod raycast;
 mod render;
 use obj::load_obj;
 use ppm::{Colour, Image};
-use raycast::{Plane, Sphere, Vec3};
+use raycast::{Mesh, Plane, Sphere, Vec3};
 use render::{Camera, PointLight, Scene};
 
-const WIDTH: u16 = 800;
-const HEIGHT: u16 = 450;
+const WIDTH: u16 = 1920;
+const HEIGHT: u16 = 1080;
 
 fn main() -> color_eyre::Result<()> {
     let mut image = Image::new(WIDTH, HEIGHT, Colour { r: 0, g: 0, b: 0 });
@@ -48,14 +48,14 @@ fn main() -> color_eyre::Result<()> {
     };
 
     let mut bnuuy = load_obj(include_str!("../bnuuy.obj"));
-    for triangle in bnuuy.iter_mut() {
+    for triangle in &mut bnuuy {
         triangle.vertices = triangle.vertices.map(|pos| {
             pos + Vec3 {
                 x: 1.0,
                 y: 0.0,
                 z: 6.0,
             }
-        })
+        });
     }
 
     let scene = Scene {
@@ -85,7 +85,7 @@ fn main() -> color_eyre::Result<()> {
                 },
             ),
             (
-                Box::new(bnuuy),
+                Box::new(Mesh::new(bnuuy)),
                 Colour {
                     r: 255,
                     g: 0,
