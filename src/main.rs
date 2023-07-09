@@ -8,96 +8,97 @@ mod raycast;
 mod render;
 use obj::load_obj;
 use ppm::{Colour, Image};
-use raycast::{Mesh, Plane, Sphere, Vec3};
+use raycast::{Mesh, Plane, Triangle, Vec3};
 use render::{Camera, PointLight, Scene};
 
-const WIDTH: u16 = 1000;
-const HEIGHT: u16 = 1000;
+const WIDTH: u16 = 500;
+const HEIGHT: u16 = 500;
 
 fn main() -> color_eyre::Result<()> {
-    let mut image = Image::new(WIDTH, HEIGHT, Colour { r: 0, g: 0, b: 0 });
-    let sphere1 = Sphere {
-        radius: 5.0,
-        center: Vec3 {
-            x: 0.0,
-            y: 2.0,
-            z: 15.0,
-        },
-    };
+    let rat = load_obj(include_str!("../rat.obj"));
 
-    let sphere2 = Sphere {
-        radius: 1.0,
-        center: Vec3 {
-            x: -2.0,
-            y: 0.5,
-            z: 7.0,
-        },
-    };
-
-    let plane = Plane {
+    let wall = Plane {
         normal: Vec3 {
             x: 0.0,
-            y: 1.0,
-            z: 0.0,
+            y: 0.0,
+            z: -1.0,
         },
         pos: Vec3 {
             x: 0.0,
             y: 0.0,
-            z: 0.0,
+            z: 2.0,
         },
     };
 
-    let mut bnuuy = load_obj(include_str!("../bnuuy.obj"));
-    for triangle in &mut bnuuy {
-        triangle.vertices = triangle.vertices.map(|pos| {
-            pos + Vec3 {
-                x: 1.0,
-                y: 0.0,
-                z: 6.0,
-            }
-        });
-    }
+    let message_width = 3.2;
+    let message_height = 1.0;
+    let y_offset = 2.0;
+    let message = Mesh::new(vec![
+        Triangle {
+            vertices: [
+                Vec3 {
+                    x: -message_width / 2.0,
+                    y: y_offset - message_height / 2.0,
+                    z: -2.01,
+                },
+                Vec3 {
+                    x: -message_width / 2.0,
+                    y: y_offset + message_height / 2.0,
+                    z: -2.0,
+                },
+                Vec3 {
+                    x: message_width / 2.0,
+                    y: y_offset - message_height / 2.0,
+                    z: -2.01,
+                },
+            ],
+        },
+        Triangle {
+            vertices: [
+                Vec3 {
+                    x: message_width / 2.0,
+                    y: y_offset - message_height / 2.0,
+                    z: -2.01,
+                },
+                Vec3 {
+                    x: -message_width / 2.0,
+                    y: y_offset + message_height / 2.0,
+                    z: -2.0,
+                },
+                Vec3 {
+                    x: message_width / 2.0,
+                    y: y_offset + message_height / 2.0,
+                    z: -2.0,
+                },
+            ],
+        },
+    ]);
 
-    let scene = Scene {
+    let mut scene = Scene {
         objects: vec![
             (
-                Box::new(sphere1),
-                Colour {
-                    r: 85,
-                    g: 205,
-                    b: 252,
-                },
-            ),
-            (
-                Box::new(sphere2),
-                Colour {
-                    r: 255,
-                    g: 255,
-                    b: 255,
-                },
-            ),
-            (
-                Box::new(plane),
-                Colour {
-                    r: 247,
-                    g: 168,
-                    b: 184,
-                },
-            ),
-            (
-                Box::new(Mesh::new(bnuuy)),
+                Box::new(Mesh::new(rat.clone())),
                 Colour {
                     r: 255,
                     g: 0,
                     b: 63,
                 },
             ),
+            (
+                Box::new(wall),
+                Colour {
+                    r: 85,
+                    g: 205,
+                    b: 252,
+                },
+            ),
+            (Box::new(message), Colour { r: 0, g: 255, b: 0 }),
         ],
         camera: Camera::new(
             Vec3 {
                 x: 0.0,
-                y: 2.0,
-                z: 0.0,
+                y: 1.0,
+                z: -10.0,
             },
             Vec3 {
                 x: 0.0,
@@ -113,9 +114,9 @@ fn main() -> color_eyre::Result<()> {
         ),
         lights: vec![PointLight {
             pos: Vec3 {
-                x: -2.0,
-                y: 7.0,
-                z: 4.0,
+                x: 0.0,
+                y: 3.0,
+                z: -5.0,
             },
             colour: Colour {
                 r: 255,
@@ -124,16 +125,35 @@ fn main() -> color_eyre::Result<()> {
             },
         }],
     };
-    scene.render(&mut image);
 
-    let mut writer = BufWriter::with_capacity(
-        19 + 12 * WIDTH as usize * HEIGHT as usize,
-        OpenOptions::new()
-            .create(true)
-            .write(true)
-            .open("out.ppm")?,
-    );
-    image.write_ppm(&mut writer)?;
+    for n in 0..48 {
+        let mut image = Image::new(WIDTH, HEIGHT, Colour { r: 0, g: 0, b: 0 });
+
+        let theta = n as f64 / 48.0 * std::f64::consts::TAU;
+        let mut rotated_rat = rat.clone();
+        for vertex in rotated_rat.iter_mut().flat_map(|tri| &mut tri.vertices) {
+            let new_x = vertex.x * theta.cos() - vertex.z * theta.sin();
+            let new_z = vertex.z * theta.cos() + vertex.x * theta.sin();
+            *vertex = Vec3 {
+                x: new_x,
+                y: vertex.y,
+                z: new_z,
+            }
+        }
+
+        scene.objects[0].0 = Box::new(Mesh::new(rotated_rat));
+
+        scene.render(&mut image);
+
+        let mut writer = BufWriter::with_capacity(
+            19 + 12 * WIDTH as usize * HEIGHT as usize,
+            OpenOptions::new()
+                .create(true)
+                .write(true)
+                .open(format!("animation/{n}.ppm"))?,
+        );
+        image.write_ppm(&mut writer)?;
+    }
 
     Ok(())
 }

@@ -10,11 +10,11 @@ const AMBIENT_COEF: f64 = 0.1;
 
 // yucky
 pub struct Camera {
-    pos: Vec3,
-    forward: Vec3,
-    up: Vec3,
-    right: Vec3,
-    focal_dist: f64,
+    pub pos: Vec3,
+    pub forward: Vec3,
+    pub up: Vec3,
+    pub right: Vec3,
+    pub focal_dist: f64,
 }
 
 impl Camera {
@@ -43,7 +43,7 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub fn render(self, image: &mut Image) {
+    pub fn render(&self, image: &mut Image) {
         let (width, height) = (image.width(), image.height());
 
         let mut pixels = image.iter_mut().collect::<Vec<_>>();
