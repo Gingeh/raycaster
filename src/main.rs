@@ -11,8 +11,8 @@ use ppm::{Colour, Image};
 use raycast::{Mesh, Plane, Sphere, Vec3};
 use render::{Camera, PointLight, Scene};
 
-const WIDTH: u16 = 1920;
-const HEIGHT: u16 = 1080;
+const WIDTH: u16 = 1000;
+const HEIGHT: u16 = 1000;
 
 fn main() -> color_eyre::Result<()> {
     let mut image = Image::new(WIDTH, HEIGHT, Colour { r: 0, g: 0, b: 0 });
